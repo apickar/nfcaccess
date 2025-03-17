@@ -1,0 +1,11 @@
+[package]
+name = "pn532_access_control"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+pn532 = "0.5"  # Ensure this matches the version you need
+rppal = "0.22.1"  # For Raspberry Pi GPIO control
+
+[profile.release]
+opt-level = 3  # Optimize for performance
