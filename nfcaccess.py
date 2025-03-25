@@ -93,7 +93,18 @@ def match_faces(captured_frame, known_encodings, known_names):
     matches = face_recognition.compare_faces(known_encodings, captured_encoding[0])
     face_distances = face_recognition.face_distance(known_encodings, captured_encoding[0])
 
-    best_match_index = np.argmin(face_distances) if matches else None
+    # best_match_index = np.argmin(face_distances) if matches else None
+    #print(face_distances)
+    best_match_index = None
+    best_match_dist = 1
+    match = False
+    for index in range(len(face_distances)):
+        if face_distances[index] < 0.5:
+            match = True
+            if face_distances[index] < best_match_dist:
+                best_match_index = index
+                break
+        #print(match)
     return known_names[best_match_index] if best_match_index is not None else None
 
 # Load all reference images
@@ -117,12 +128,21 @@ while True:
         
                 if matched_name:
                     print(f"✅ Face Matched with {matched_name}! Access Confirmed.")
+                    GPIO.output(LED_GREEN_PIN, GPIO.HIGH)
+                    time.sleep(3)  # Keep relay open for 3 sec
+                    #GPIO.output(RELAY_PIN, GPIO.LOW)
+                    GPIO.output(LED_GREEN_PIN, GPIO.LOW)
                 else:
-                    print("⚠️ Face not recognized, but access was granted.")
-            GPIO.output(LED_GREEN_PIN, GPIO.HIGH)
-            time.sleep(3)  # Keep relay open for 3 sec
-            #GPIO.output(RELAY_PIN, GPIO.LOW)
-            GPIO.output(LED_GREEN_PIN, GPIO.LOW)
+                    print("⚠️ Face not recognized and access was denied.")
+                    capture_image("denied")
+                    GPIO.output(LED_RED_PIN, GPIO.HIGH)
+                    pwm = GPIO.PWM(BUZZER_PIN, 10000)
+                    pwm.start(20)
+                    #GPIO.output(BUZZER_PIN, GPIO.HIGH)
+                    time.sleep(3)  # Buzzer and LED stay on for 2 sec
+                    GPIO.output(LED_RED_PIN, GPIO.LOW)
+                    #GPIO.output(BUZZER_PIN, GPIO.LOW)
+                    pwm.stop()
         else:
             print("❌ Access Denied! Capturing Image...")
             capture_image("denied")
@@ -136,6 +156,6 @@ while True:
             pwm.stop()
     time.sleep(0.5)  # Poll every 500ms
 
-   # Release resources
-    video_capture.release()
-    cv2.destroyAllWindows()
+# Release resources
+video_capture.release()
+cv2.destroyAllWindows()
