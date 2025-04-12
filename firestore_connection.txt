@@ -1,0 +1,19 @@
+def test_firestore_connection():
+    print("📡 Fetching all documents in 'access_logs'...")
+    docs = db.collection('access_logs').stream()
+    found = False
+    for doc in docs:
+        print(f"🔍 Found document: {doc.id} => {doc.to_dict()}")
+        found = True
+    if not found:
+        print("⚠️ No documents found in 'access_logs'")
+
+
+
+Then at the bottom of your script, call:
+python
+
+Copy
+
+Edit
+test_firestore_connection()
